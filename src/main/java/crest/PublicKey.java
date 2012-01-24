@@ -1,18 +1,31 @@
 package crest;
 
+import java.io.Serializable;
 import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Hibernate entity for public keys
  */
-public class PublicKey {
+@Entity
+@Table(name = "public_keys")
+public class PublicKey implements Serializable {
+  private static final long serialVersionUID = -4175765959576175717L;
   private Long id;
   private String keyValue;
+  private String metadata;
   private Date timestamp;
-  
-  public PublicKey() {  }
 
-  private Long getId() {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Column(name = "id")
+  public Long getId() {
     return id;
   }
 
@@ -20,6 +33,7 @@ public class PublicKey {
     this.id = id;
   }
 
+  @Column(updatable = false, name="key_value", nullable = false)
   public String getKeyValue() {
     return keyValue;
   }
@@ -28,6 +42,16 @@ public class PublicKey {
     this.keyValue = keyValue;
   }
 
+  @Column(updatable = false, name="metadata")
+  public String getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(String metadata) {
+    this.metadata = metadata;
+  }
+
+  @Column(updatable = false, name="timestamp", nullable = false)
   public Date getTimestamp() {
     return timestamp;
   }

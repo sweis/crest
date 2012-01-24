@@ -71,6 +71,11 @@
         	<artifactId>hibernate-core</artifactId>
         	<version>4.0.1.Final</version>
         </dependency>
+        <dependency>
+        	<groupId>mysql</groupId>
+        	<artifactId>mysql-connector-java</artifactId>
+        	<version>5.1.18</version>
+        </dependency>
     </dependencies>
     <properties>
         <jersey-version>1.8</jersey-version>
