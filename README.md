@@ -1,7 +1,7 @@
-Crest: Keyczar crypto + REST
+Crest: Crypto + REST
 =============
 
-Playing with hooking up Keyczar to a REST API.
+This is just playing with hooking up a Crypto REST API.
 
 Generate a 2048-bit RSA private key (without a passphrase):
 

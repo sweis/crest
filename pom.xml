@@ -20,10 +20,15 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.glassfish</groupId>
-                <artifactId>maven-glassfish-plugin</artifactId>
-                <version>1.0-alpha-4</version>
-            </plugin>
+          		<groupId>org.apache.tomcat.maven</groupId>
+          		<artifactId>tomcat6-maven-plugin</artifactId>
+          		<version>2.0-SNAPSHOT</version>
+        	</plugin>
+        	<plugin>
+          		<groupId>org.apache.tomcat.maven</groupId>
+          		<artifactId>tomcat7-maven-plugin</artifactId>
+          		<version>2.0-SNAPSHOT</version>
+        	</plugin>
         </plugins>
     </build>
     <dependencies>
@@ -50,23 +55,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.distributions</groupId>
-            <artifactId>web-all</artifactId>
-            <version>10.0-build-20080430</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.embedded</groupId>
-            <artifactId>gf-embedded-api</artifactId>
-            <version>1.0-alpha-4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-        	<groupId>org.keyczar</groupId>
-            <artifactId>keyczar</artifactId>
-            <version>0.71b</version>
-        </dependency>
-        <dependency>
         	<groupId>org.hibernate</groupId>
         	<artifactId>hibernate-core</artifactId>
         	<version>4.0.1.Final</version>
@@ -76,6 +64,12 @@
         	<artifactId>mysql-connector-java</artifactId>
         	<version>5.1.18</version>
         </dependency>
+        <dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
     </dependencies>
     <properties>
         <jersey-version>1.8</jersey-version>

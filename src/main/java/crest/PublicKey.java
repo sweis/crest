@@ -5,20 +5,15 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
+import java.security.MessageDigest;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import org.keyczar.exceptions.KeyczarException;
-import org.keyczar.util.Base64Coder;
-import org.keyczar.util.Util;
 
 /**
  * Hibernate entity for public keys
@@ -26,9 +21,7 @@ import org.keyczar.util.Util;
 @Entity
 @Table(name = "public_keys")
 public class PublicKey implements Serializable {
-  
   private static final long serialVersionUID = -4175765959576175717L;
-  private Long id;
   private byte[] keyValue;
   private String keyHash;
   private Date createdOn;
@@ -37,7 +30,7 @@ public class PublicKey implements Serializable {
     // Empty constructor for Hibernate
   }
   
-  public PublicKey(InputStream x509Stream) throws GeneralSecurityException, IOException, KeyczarException {
+  public PublicKey(InputStream x509Stream) throws GeneralSecurityException, IOException {
     byte[] x509Data = Util.readStreamFully(x509Stream);
     X509EncodedKeySpec keySpec = new X509EncodedKeySpec(x509Data);
 
@@ -47,19 +40,9 @@ public class PublicKey implements Serializable {
     if (javaPublicKey != null) {
       setCreatedOn(new Date());
       setKeyValue(x509Data);
-      setKeyHash(Base64Coder.encodeWebSafe(Util.hash(x509Data)));
+      MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+      setKeyHash(Util.byteArrayToHex(sha1.digest(x509Data)));
     }
-  }
-    
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "id")
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
   }
 
   @Column(updatable = false, name = "key_value", nullable = false, length = 600)
@@ -71,6 +54,7 @@ public class PublicKey implements Serializable {
     this.keyValue = keyValue;
   }
 
+  @Id
   @Column(updatable = false, name = "key_hash", nullable = false, unique = true)
   public String getKeyHash() {
     return keyHash;
