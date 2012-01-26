@@ -11,6 +11,6 @@ Export the RSA public key in DER format:
 
 	openssl rsa -in privkey.pem -pubout -outform DER -out pubkey.der
 
-Post the DER-formatted RSA public key to a local server:
+PUT the DER-formatted RSA public key in a locally running server:
 
 	curl -T pubkey.der http://localhost:8080/crest/v1/publickey
