@@ -1,6 +1,12 @@
 package crest;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -10,18 +16,41 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.keyczar.exceptions.KeyczarException;
+import org.keyczar.util.Base64Coder;
+import org.keyczar.util.Util;
+
 /**
  * Hibernate entity for public keys
  */
 @Entity
 @Table(name = "public_keys")
 public class PublicKey implements Serializable {
+  
   private static final long serialVersionUID = -4175765959576175717L;
   private Long id;
-  private String keyValue;
-  private String metadata;
-  private Date timestamp;
+  private byte[] keyValue;
+  private String keyHash;
+  private Date createdOn;
 
+  public PublicKey() {
+    // Empty constructor for Hibernate
+  }
+  
+  public PublicKey(InputStream x509Stream) throws GeneralSecurityException, IOException, KeyczarException {
+    byte[] x509Data = Util.readStreamFully(x509Stream);
+    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(x509Data);
+
+    // This just tests that the public key parses correctly
+    RSAPublicKey javaPublicKey = (RSAPublicKey) 
+        KeyFactory.getInstance("RSA").generatePublic(keySpec);    
+    if (javaPublicKey != null) {
+      setCreatedOn(new Date());
+      setKeyValue(x509Data);
+      setKeyHash(Base64Coder.encodeWebSafe(Util.hash(x509Data)));
+    }
+  }
+    
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id")
@@ -33,30 +62,30 @@ public class PublicKey implements Serializable {
     this.id = id;
   }
 
-  @Column(updatable = false, name="key_value", nullable = false)
-  public String getKeyValue() {
+  @Column(updatable = false, name = "key_value", nullable = false, length = 600)
+  public byte[] getKeyValue() {
     return keyValue;
   }
 
-  public void setKeyValue(String keyValue) {
+  public void setKeyValue(byte[] keyValue) {
     this.keyValue = keyValue;
   }
 
-  @Column(updatable = false, name="metadata")
-  public String getMetadata() {
-    return metadata;
+  @Column(updatable = false, name = "key_hash", nullable = false, unique = true)
+  public String getKeyHash() {
+    return keyHash;
   }
 
-  public void setMetadata(String metadata) {
-    this.metadata = metadata;
+  public void setKeyHash(String keyHash) {
+    this.keyHash = keyHash;
   }
 
-  @Column(updatable = false, name="timestamp", nullable = false)
-  public Date getTimestamp() {
-    return timestamp;
+  @Column(updatable = false, name = "created_on", nullable = false)
+  public Date getCreatedOn() {
+    return createdOn;
   }
 
-  public void setTimestamp(Date timestamp) {
-    this.timestamp = timestamp;
+  public void setCreatedOn(Date createdOn) {
+    this.createdOn = createdOn;
   }
 }
