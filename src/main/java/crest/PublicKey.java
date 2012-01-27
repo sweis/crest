@@ -16,9 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-
-import com.sun.jersey.core.util.Base64;
 
 /**
  * Hibernate entity for public keys
@@ -27,8 +26,8 @@ import com.sun.jersey.core.util.Base64;
 @Table(name = "public_keys")
 public class PublicKey implements Serializable {
   private static final long serialVersionUID = -4175765959576175717L;
-  private static final String PEM_HEADER = "-----BEGIN RSA PUBLIC KEY-----";
-  private static final String PEM_FOOTER = "-----END RSA PUBLIC KEY-----";
+  private static final String PEM_HEADER = "-----BEGIN PUBLIC KEY-----";
+  private static final String PEM_FOOTER = "-----END PUBLIC KEY-----";
   private byte[] keyValue;
   private String keyHash;
   private Date createdOn;
@@ -87,7 +86,7 @@ public class PublicKey implements Serializable {
   }
   
   public String toString() {
-    String encoded = new String(Base64.encode(getKeyValue()));
-    return String.format("%s\n%s\n%s\n", PEM_HEADER, encoded, PEM_FOOTER);
+    String encoded = new String(Base64.encodeBase64Chunked(getKeyValue()));
+    return String.format("%s\n%s%s\n", PEM_HEADER, encoded, PEM_FOOTER);
   }
 }
