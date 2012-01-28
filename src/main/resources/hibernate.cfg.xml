@@ -30,5 +30,6 @@
         <property name="hbm2ddl.auto">update</property>
 
 		<mapping class="crest.PublicKey"/>
+		<mapping class="crest.SessionKey"/>
     </session-factory>
 </hibernate-configuration>

@@ -7,10 +7,14 @@ import org.hibernate.SessionFactory;
 
 public class GenericDao <T, PK extends Serializable> {
     private final SessionFactory sessionFactory;
-    private final Class<T> type;
+    private final Class<T> entityClass;
     
-    GenericDao(Class<T> type, SessionFactory sessionFactory) {
-      this.type = type;
+    static <U, V extends Serializable> GenericDao<U, V> getGenericDao(Class<U> entityClass, Class<V> keyClass) {
+      return new GenericDao<U, V>(entityClass, HibernateUtil.getSessionFactory());
+    }
+    
+    GenericDao(Class<T> entityClass, SessionFactory sessionFactory) {
+      this.entityClass = entityClass;
       this.sessionFactory = sessionFactory;
     }
     
@@ -21,10 +25,13 @@ public class GenericDao <T, PK extends Serializable> {
     @SuppressWarnings("unchecked")  // Casting the primary key to the PK class
     PK save(T toSave) {
       Session session = sessionFactory.getCurrentSession();
-      session.beginTransaction();
-      Serializable identifier = session.save(toSave);
-      session.getTransaction().commit();
-      return (PK) identifier;
+      try {
+        session.beginTransaction();
+        Serializable identifier = session.save(toSave);
+        return (PK) identifier;
+      } finally {
+        session.getTransaction().commit();
+      }
     }
 
     /** 
@@ -33,17 +40,12 @@ public class GenericDao <T, PK extends Serializable> {
     @SuppressWarnings("unchecked")  // Casing result to the T class
     T findById(PK id) {
       Session session = sessionFactory.getCurrentSession();
-      session.beginTransaction();
-      T value = (T) session.get(type, id);
-      session.getTransaction().commit();
-      return value;
+      try {
+        session.beginTransaction();
+        T value = (T) session.get(entityClass, id);
+        return value;
+      } finally {
+        session.getTransaction().commit();
+      }
     }
-
-    /**
-     * @param criteria A search criteria
-     * @return A list of any entities matching the given criteria
-     */
-//    List<T> findByCriteria(DetachedCriteria criteria) {
-      
-  //  }
 }
