@@ -1,4 +1,4 @@
-package crest;
+package crest.keys;
 
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -24,8 +24,8 @@ public abstract class Key {
     return keyValue;
   }
 
-  public void setKeyValue(byte[] encryptedKeyValue) {
-    this.keyValue = encryptedKeyValue;
+  public void setKeyValue(byte[] keyValue) {
+    this.keyValue = keyValue;
   }
   
   @Id

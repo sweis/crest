@@ -1,51 +1,88 @@
-package crest;
+package crest.keys;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
-import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 import org.apache.commons.codec.binary.Base64;
 
-public class CryptoUtil {
+/**
+ * Hibernate entity for public keys
+ */
+@Entity
+@Table(name = "public_keys")
+public class PublicKey extends Key implements Serializable {
+  private static final long serialVersionUID = -4175765959576175717L;
+  private static final String ASYMMETRIC_ALGORITHM = "RSA";
+  private static final String ASYMMETRIC_MODE = "RSA/ECB/OAEPWITHSHA1ANDMGF1PADDING";
   private static final String PEM_HEADER = "-----BEGIN PUBLIC KEY-----";
   private static final String PEM_FOOTER = "-----END PUBLIC KEY-----";
   private static final Pattern PEM_HEADER_PATTERN = Pattern.compile("-----BEGIN ([A-Z ]+)-----");
   private static final Pattern PEM_FOOTER_PATTERN = Pattern.compile("-----END ([A-Z ]+)-----");
-  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-  private static final int AES_KEY_LENGTH_BYTES = 16;
-  private CryptoUtil() { /* Don't new me */ }
   
-  static SecretKeySpec generateAesKey() {
-    byte[] aesBytes = new byte[AES_KEY_LENGTH_BYTES];
-    SECURE_RANDOM.nextBytes(aesBytes);
-    return new SecretKeySpec(aesBytes, "AES");
+  public PublicKey() {
+    // Empty constructor for Hibernate
+  }
+
+  public PublicKey(InputStream x509Stream) throws GeneralSecurityException, IOException {
+    ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
+    byte[] buf = new byte[8192];
+    int bytesRead = 0;
+    while ((bytesRead = x509Stream.read(buf)) != -1) {
+      tempStream.write(buf, 0, bytesRead);
+    }
+    byte[] x509Data = maybeConvertPemToDer(tempStream.toByteArray());
+    setKeyValue(x509Data);
+    // This will throw a GeneralSecurityException if the data is formatted incorrectly
+    convertToJcePublicKey();
+    setCreatedOn(new Date());
+    generateKeyHash();
   }
   
-  static RSAPublicKey getJcePublicKey(byte[] keyBytes) throws GeneralSecurityException {
-    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+  private RSAPublicKey convertToJcePublicKey() throws GeneralSecurityException {
+    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(getKeyValue());
     // This will throw an exception if the key spec is not a valid form 
     RSAPublicKey javaPublicKey = (RSAPublicKey) 
-        KeyFactory.getInstance("RSA").generatePublic(keySpec);
+        KeyFactory.getInstance(ASYMMETRIC_ALGORITHM).generatePublic(keySpec);
     return javaPublicKey;
   }
   
-  static String derToPem(byte[] derBytes) {
+  private Cipher asRsaKeyWrapCipher() throws GeneralSecurityException {
+    Cipher rsaCipher = Cipher.getInstance(ASYMMETRIC_MODE);
+    rsaCipher.init(Cipher.WRAP_MODE, convertToJcePublicKey());
+    return rsaCipher;
+  }
+  
+  byte[] wrapSecretKey(SecretKeySpec secretKey) throws GeneralSecurityException{
+    return asRsaKeyWrapCipher().wrap(secretKey);
+  }
+
+  public String toString() {
+    return derToPem(getKeyValue());
+  }
+  
+  private static String derToPem(byte[] derBytes) {
     String encoded = new String(Base64.encodeBase64Chunked(derBytes));
     return String.format("%s\n%s%s\n", PEM_HEADER, encoded, PEM_FOOTER);
   }
 
-  static byte[] maybeConvertPemToDer(byte[] data) throws IOException {
+  private static byte[] maybeConvertPemToDer(byte[] data) throws IOException {
     BufferedReader bis = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(data)));
     String firstLine = bis.readLine();
     Matcher headerMatcher = PEM_HEADER_PATTERN.matcher(firstLine);
@@ -58,7 +95,7 @@ public class CryptoUtil {
     }
   }
 
-  static byte[] decodePemBase64(BufferedReader inputStream, String expectedFooter)
+  private static byte[] decodePemBase64(BufferedReader inputStream, String expectedFooter)
       throws IOException {
     String line;
     ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
@@ -74,5 +111,4 @@ public class CryptoUtil {
     }
     throw new IOException("Invalid PEM input");
   }
-  
 }

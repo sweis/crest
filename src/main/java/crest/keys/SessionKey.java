@@ -1,11 +1,9 @@
-package crest;
+package crest.keys;
 
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
-import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -22,18 +20,15 @@ import org.apache.commons.codec.binary.Base64;
 public class SessionKey extends Key implements Serializable {
   private static final long serialVersionUID = 1724559050420055018L;
   private PublicKey publicKey;
-
+  
   public SessionKey() {
     // Empty constructor for Hibernate
   }
   
   public SessionKey(PublicKey publicKey, SecretKeySpec aesKey) throws GeneralSecurityException {
     setPublicKey(publicKey);
-    RSAPublicKey jcePublicKey = CryptoUtil.getJcePublicKey(publicKey.getKeyValue());
-    Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA1ANDMGF1PADDING");
-    rsaCipher.init(Cipher.WRAP_MODE, jcePublicKey);
-    byte[] encryptedSymmKey = rsaCipher.wrap(aesKey);
-    setKeyValue(encryptedSymmKey);
+    byte[] wrappedSecretKey = publicKey.wrapSecretKey(aesKey);
+    setKeyValue(wrappedSecretKey);
     setCreatedOn(new Date());
     generateKeyHash();
   }

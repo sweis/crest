@@ -29,7 +29,8 @@
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">update</property>
 
-		<mapping class="crest.PublicKey"/>
-		<mapping class="crest.SessionKey"/>
+		<mapping class="crest.keys.DeduplicationKey"/>
+		<mapping class="crest.keys.PublicKey"/>
+		<mapping class="crest.keys.SessionKey"/>
     </session-factory>
 </hibernate-configuration>
