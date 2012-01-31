@@ -21,6 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Hibernate entity for public keys
@@ -41,13 +42,7 @@ public class PublicKey extends Key implements Serializable {
   }
 
   public PublicKey(InputStream x509Stream) throws GeneralSecurityException, IOException {
-    ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
-    byte[] buf = new byte[8192];
-    int bytesRead = 0;
-    while ((bytesRead = x509Stream.read(buf)) != -1) {
-      tempStream.write(buf, 0, bytesRead);
-    }
-    byte[] x509Data = maybeConvertPemToDer(tempStream.toByteArray());
+    byte[] x509Data = maybeConvertPemToDer(IOUtils.toByteArray(x509Stream));
     setKeyValue(x509Data);
     // This will throw a GeneralSecurityException if the data is formatted incorrectly
     convertToJcePublicKey();

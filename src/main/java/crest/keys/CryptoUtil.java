@@ -9,24 +9,27 @@ public final class CryptoUtil {
   private static final String MAC_ALGORITHM = "HMACSHA1";
   private static final String SYMMETRIC_ALGORITHM = "AES";
   private static final int SYMMETRIC_KEY_LENGTH_BYTES = 16;
+  private static final int MAC_KEY_LENGTH_BYTES = 32;
   private CryptoUtil() { /* Don't new me */ }
   
   public static SecureRandom getSecureRandom() {
     return SECURE_RANDOM;
   }
 
-  public static SecretKeySpec getAesKeySpec(byte[] aesBytes) {
-    return new SecretKeySpec(aesBytes, SYMMETRIC_ALGORITHM);
-  }
-  
-  public static SecretKeySpec getHmacKeySpec(byte[] hmacBytes) {
-    return new SecretKeySpec(hmacBytes, MAC_ALGORITHM);
-  }
-
   public static SecretKeySpec generateAesKey() {
     byte[] randBytes = new byte[SYMMETRIC_KEY_LENGTH_BYTES];
     getSecureRandom().nextBytes(randBytes);
-    return getAesKeySpec(randBytes);
+    return new SecretKeySpec(randBytes, SYMMETRIC_ALGORITHM);
+  }
+ 
+  public static SecretKeySpec generateHmacKey() {
+    byte[] randBytes = new byte[MAC_KEY_LENGTH_BYTES];
+    getSecureRandom().nextBytes(randBytes);
+    return new SecretKeySpec(randBytes, MAC_ALGORITHM);
+  }
+
+  public static SecretKeySpec getHmacKeySpec(byte[] keyValue) {
+    return new SecretKeySpec(keyValue, MAC_ALGORITHM);
   }
   
 }

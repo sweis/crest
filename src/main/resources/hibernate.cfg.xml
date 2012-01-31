@@ -29,6 +29,7 @@
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">update</property>
 
+		<mapping class="crest.files.EncryptedFile"/>
 		<mapping class="crest.keys.DeduplicationKey"/>
 		<mapping class="crest.keys.PublicKey"/>
 		<mapping class="crest.keys.SessionKey"/>
