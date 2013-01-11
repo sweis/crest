@@ -1,6 +1,8 @@
 Crest: Crypto + REST
 =============
 
+**This is some non-functional code that I abandoned. Not much to see here.**
+
 This is just playing with hooking up a Crypto REST API.
 
 Generate a 2048-bit RSA private key (without a passphrase):
